@@ -1,0 +1,176 @@
+[
+  {
+    "name": "drive_search",
+    "description": "Search for files in Google Drive",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Drive search query. Supports full Drive syntax like \"name contains '销售'\" or \"mimeType='application/vnd.google-apps.spreadsheet'\". Bare keywords like \"销售 报表\" are also accepted and will be converted into a valid Drive query automatically."
+        },
+        "maxResults": {
+          "type": "number",
+          "description": "Max results (default 20)"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "drive_list",
+    "description": "List files in a Google Drive folder",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "folderId": {
+          "type": "string",
+          "description": "Folder ID (default: root)"
+        },
+        "maxResults": {
+          "type": "number",
+          "description": "Max results (default 30)"
+        }
+      }
+    }
+  },
+  {
+    "name": "sheets_read",
+    "description": "Read values from a Google Spreadsheet",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "spreadsheetId": {
+          "type": "string",
+          "description": "Spreadsheet ID from the URL"
+        },
+        "range": {
+          "type": "string",
+          "description": "A1 notation range, e.g. 'Sheet1!A1:Z100' or 'A:N'"
+        }
+      },
+      "required": [
+        "spreadsheetId",
+        "range"
+      ]
+    }
+  },
+  {
+    "name": "sheets_append",
+    "description": "Append rows to a Google Spreadsheet. Fail-closed unless GOOGLE_MCP_ALLOW_WRITE=1 is set for the MCP process.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "spreadsheetId": {
+          "type": "string",
+          "description": "Spreadsheet ID"
+        },
+        "range": {
+          "type": "string",
+          "description": "Starting range, e.g. 'A1'"
+        },
+        "values": {
+          "type": "array",
+          "description": "2D array of row values to append",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": [
+        "spreadsheetId",
+        "range",
+        "values"
+      ]
+    }
+  },
+  {
+    "name": "sheets_update",
+    "description": "Update specific cells in a Google Spreadsheet. Fail-closed unless GOOGLE_MCP_ALLOW_WRITE=1 is set for the MCP process.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "spreadsheetId": {
+          "type": "string",
+          "description": "Spreadsheet ID"
+        },
+        "range": {
+          "type": "string",
+          "description": "A1 notation range to update"
+        },
+        "values": {
+          "type": "array",
+          "description": "2D array of values",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": [
+        "spreadsheetId",
+        "range",
+        "values"
+      ]
+    }
+  },
+  {
+    "name": "sheets_info",
+    "description": "Get spreadsheet metadata: title, sheet names and dimensions",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "spreadsheetId": {
+          "type": "string",
+          "description": "Spreadsheet ID"
+        }
+      },
+      "required": [
+        "spreadsheetId"
+      ]
+    }
+  },
+  {
+    "name": "docs_read",
+    "description": "Read the text content of a Google Doc",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "description": "Document ID from the URL"
+        }
+      },
+      "required": [
+        "documentId"
+      ]
+    }
+  },
+  {
+    "name": "docs_create",
+    "description": "Create a new Google Doc with optional initial content. Fail-closed unless GOOGLE_MCP_ALLOW_WRITE=1 is set for the MCP process.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Document title"
+        },
+        "content": {
+          "type": "string",
+          "description": "Initial text content (optional)"
+        }
+      },
+      "required": [
+        "title"
+      ]
+    }
+  }
+]

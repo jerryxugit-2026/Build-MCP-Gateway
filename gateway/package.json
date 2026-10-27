@@ -1,0 +1,15 @@
+{
+  "name": "mcp-shared-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "One MCP process pool, many agent clients: modern (2026-07-28) HTTP in front, legacy stdio servers behind.",
+  "main": "gateway.mjs",
+  "scripts": { "start": "node --max-old-space-size=96 gateway.mjs" },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.2.0",
+    "@modelcontextprotocol/node": "2.1.0",
+    "@modelcontextprotocol/client": "2.0.0"
+  },
+  "engines": { "node": ">=22" }
+}

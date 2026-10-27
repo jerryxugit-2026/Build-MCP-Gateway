@@ -1,0 +1,2896 @@
+[
+  {
+    "name": "get_profile",
+    "title": "Get Profile",
+    "description": "Retrieves the Gmail profile information for the authenticated user or a specified user, including account details and settings.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address or the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "list_drafts",
+    "title": "List Drafts",
+    "description": "Retrieves a list of draft messages from the user's mailbox. Supports filtering by search query and optional inclusion of drafts from spam and trash folders.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "includeSpamTrash": {
+          "type": "boolean",
+          "description": "Whether to include draft messages from the SPAM and TRASH folders in the results."
+        },
+        "maxResults": {
+          "type": "integer",
+          "description": "Maximum number of drafts to return. The default is 100 and the maximum allowed value is 500."
+        },
+        "q": {
+          "type": "string",
+          "description": "Filter draft messages using Gmail search query syntax. Supports the same query operators as the Gmail search box (e.g., from:, rfc822msgid:, is:unread)."
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "create_draft",
+    "title": "Create Draft",
+    "description": "Creates a new email draft with the DRAFT label in Gmail. The draft can optionally include classification labels and custom label IDs.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address or the special value 'me' to indicate the authenticated user.",
+          "type": "string"
+        },
+        "classificationLabelValues": {
+          "items": {
+            "additionalProperties": true,
+            "description": "Classification Labels applied to the email message. Classification Labels are different from Gmail inbox labels. Only used for Google Workspace accounts. [Learn more about classification labels](https://support.google.com/a/answer/9292382).",
+            "properties": {
+              "fields": {
+                "items": {
+                  "additionalProperties": true,
+                  "description": "Field values for a classification label.",
+                  "properties": {
+                    "fieldId": {
+                      "type": "string",
+                      "description": "Required. The field ID for the Classification Label Value. Maps to the ID field of the Google Drive `Label.Field` object."
+                    },
+                    "selection": {
+                      "type": "string",
+                      "description": "Selection choice ID for the selection option. Should only be set if the field type is `SELECTION` in the Google Drive `Label.Field` object. Maps to the id field of the Google Drive `Label.Field.SelectionOptions` resource."
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array",
+                "description": "Field values for the given classification label ID."
+              },
+              "labelId": {
+                "type": "string",
+                "description": "Required. The canonical or raw alphanumeric classification label ID. Maps to the ID field of the Google Drive Label resource."
+              }
+            },
+            "type": "object"
+          },
+          "type": "array",
+          "description": "Classification label values to apply to the draft message. Each classification label ID must be unique; duplicate IDs will be deduplicated arbitrarily. Only available for Google Workspace accounts."
+        },
+        "labelIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "List of label IDs to apply to the draft message. Labels are applied in the order provided."
+        },
+        "email_from": {
+          "type": "string",
+          "description": "Sender email address (From header)"
+        },
+        "email_to": {
+          "type": "string",
+          "description": "Recipient email address (To header)"
+        },
+        "email_cc": {
+          "type": "string",
+          "description": "Carbon copy recipients (Cc header), comma-separated"
+        },
+        "email_bcc": {
+          "type": "string",
+          "description": "Blind carbon copy recipients (Bcc header), comma-separated"
+        },
+        "email_subject": {
+          "type": "string",
+          "description": "Email subject line"
+        },
+        "email_body": {
+          "type": "string",
+          "description": "Email body content (plain text or HTML)"
+        },
+        "email_body_is_html": {
+          "type": "boolean",
+          "description": "Whether email_body is HTML (True) or plain text (False)"
+        },
+        "email_reply_to": {
+          "type": "string",
+          "description": "Reply-To header address"
+        },
+        "email_in_reply_to": {
+          "type": "string",
+          "description": "In-Reply-To header (Message-ID of original message)"
+        },
+        "email_references": {
+          "type": "string",
+          "description": "References header (Message-IDs of related messages), space-separated"
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "get_draft",
+    "title": "Get Draft",
+    "description": "Retrieves a specific draft message by ID. Returns the draft in the requested format for viewing or further editing.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address or the special value 'me' to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the draft message to retrieve.",
+          "type": "string"
+        },
+        "format": {
+          "enum": [
+            "minimal",
+            "full",
+            "raw",
+            "metadata"
+          ],
+          "type": "string",
+          "description": "The format in which to return the draft message content and metadata."
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "update_draft",
+    "title": "Update Draft",
+    "description": "Updates the content of an existing draft message. Replaces the draft's message body and metadata with the provided values.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the draft message to update.",
+          "type": "string"
+        },
+        "classificationLabelValues": {
+          "items": {
+            "additionalProperties": true,
+            "description": "Classification Labels applied to the email message. Classification Labels are different from Gmail inbox labels. Only used for Google Workspace accounts. [Learn more about classification labels](https://support.google.com/a/answer/9292382).",
+            "properties": {
+              "fields": {
+                "items": {
+                  "additionalProperties": true,
+                  "description": "Field values for a classification label.",
+                  "properties": {
+                    "fieldId": {
+                      "type": "string",
+                      "description": "Required. The field ID for the Classification Label Value. Maps to the ID field of the Google Drive `Label.Field` object."
+                    },
+                    "selection": {
+                      "type": "string",
+                      "description": "Selection choice ID for the selection option. Should only be set if the field type is `SELECTION` in the Google Drive `Label.Field` object. Maps to the id field of the Google Drive `Label.Field.SelectionOptions` resource."
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array",
+                "description": "Field values for the given classification label ID."
+              },
+              "labelId": {
+                "type": "string",
+                "description": "Required. The canonical or raw alphanumeric classification label ID. Maps to the ID field of the Google Drive Label resource."
+              }
+            },
+            "type": "object"
+          },
+          "type": "array",
+          "description": "Classification label values to apply to the message. Each classification label ID must be unique; duplicate IDs will be deduplicated arbitrarily. Only available for Google Workspace accounts. Classification label schemas can be queried using the Google Drive Labels API."
+        },
+        "labelIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "List of label IDs to apply to this message. Labels are used to organize and categorize messages in Gmail."
+        },
+        "email_from": {
+          "type": "string",
+          "description": "Sender email address (From header)"
+        },
+        "email_to": {
+          "type": "string",
+          "description": "Recipient email address (To header)"
+        },
+        "email_cc": {
+          "type": "string",
+          "description": "Carbon copy recipients (Cc header), comma-separated"
+        },
+        "email_bcc": {
+          "type": "string",
+          "description": "Blind carbon copy recipients (Bcc header), comma-separated"
+        },
+        "email_subject": {
+          "type": "string",
+          "description": "Email subject line"
+        },
+        "email_body": {
+          "type": "string",
+          "description": "Email body content (plain text or HTML)"
+        },
+        "email_body_is_html": {
+          "type": "boolean",
+          "description": "Whether email_body is HTML (True) or plain text (False)"
+        },
+        "email_reply_to": {
+          "type": "string",
+          "description": "Reply-To header address"
+        },
+        "email_in_reply_to": {
+          "type": "string",
+          "description": "In-Reply-To header (Message-ID of original message)"
+        },
+        "email_references": {
+          "type": "string",
+          "description": "References header (Message-IDs of related messages), space-separated"
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "delete_draft",
+    "title": "Delete Draft",
+    "description": "Permanently deletes a draft message without moving it to trash. This action is immediate and irreversible.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The email address of the user whose draft should be deleted. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the draft message to delete.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "send_draft",
+    "title": "Send Draft",
+    "description": "Sends an existing draft message to recipients specified in the To, Cc, and Bcc headers. The draft must already exist and contain valid recipient information.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address or the special value `me` to indicate the authenticated user.",
+          "type": "string"
+        },
+        "classificationLabelValues": {
+          "items": {
+            "additionalProperties": true,
+            "description": "Classification Labels applied to the email message. Classification Labels are different from Gmail inbox labels. Only used for Google Workspace accounts. [Learn more about classification labels](https://support.google.com/a/answer/9292382).",
+            "properties": {
+              "fields": {
+                "items": {
+                  "additionalProperties": true,
+                  "description": "Field values for a classification label.",
+                  "properties": {
+                    "fieldId": {
+                      "type": "string",
+                      "description": "Required. The field ID for the Classification Label Value. Maps to the ID field of the Google Drive `Label.Field` object."
+                    },
+                    "selection": {
+                      "type": "string",
+                      "description": "Selection choice ID for the selection option. Should only be set if the field type is `SELECTION` in the Google Drive `Label.Field` object. Maps to the id field of the Google Drive `Label.Field.SelectionOptions` resource."
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array",
+                "description": "Field values for the given classification label ID."
+              },
+              "labelId": {
+                "type": "string",
+                "description": "Required. The canonical or raw alphanumeric classification label ID. Maps to the ID field of the Google Drive Label resource."
+              }
+            },
+            "type": "object"
+          },
+          "type": "array",
+          "description": "Classification label values to apply to the message. Each classification label ID must be unique; duplicate IDs will be deduplicated arbitrarily. Only available for Google Workspace accounts."
+        },
+        "labelIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "List of label IDs to apply to this message. Labels are applied in the order provided."
+        },
+        "email_from": {
+          "type": "string",
+          "description": "Sender email address (From header)"
+        },
+        "email_to": {
+          "type": "string",
+          "description": "Recipient email address (To header)"
+        },
+        "email_cc": {
+          "type": "string",
+          "description": "Carbon copy recipients (Cc header), comma-separated"
+        },
+        "email_bcc": {
+          "type": "string",
+          "description": "Blind carbon copy recipients (Bcc header), comma-separated"
+        },
+        "email_subject": {
+          "type": "string",
+          "description": "Email subject line"
+        },
+        "email_body": {
+          "type": "string",
+          "description": "Email body content (plain text or HTML)"
+        },
+        "email_body_is_html": {
+          "type": "boolean",
+          "description": "Whether email_body is HTML (True) or plain text (False)"
+        },
+        "email_reply_to": {
+          "type": "string",
+          "description": "Reply-To header address"
+        },
+        "email_in_reply_to": {
+          "type": "string",
+          "description": "In-Reply-To header (Message-ID of original message)"
+        },
+        "email_references": {
+          "type": "string",
+          "description": "References header (Message-IDs of related messages), space-separated"
+        },
+        "id": {
+          "type": "string",
+          "description": "The immutable ID of the draft."
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "list_mailbox_history",
+    "title": "List Mailbox History",
+    "description": "Retrieves the chronological history of all changes to a mailbox, including message additions, deletions, and label modifications. Results are returned in chronological order by historyId and support pagination for efficient sync operations.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "historyTypes": {
+          "items": {
+            "enum": [
+              "messageAdded",
+              "messageDeleted",
+              "labelAdded",
+              "labelRemoved"
+            ],
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Types of history events to include in results. When specified, only changes matching these types are returned."
+        },
+        "labelId": {
+          "type": "string",
+          "description": "Filter results to only include messages with a specific label ID."
+        },
+        "maxResults": {
+          "type": "integer",
+          "description": "Maximum number of history records to return per request. Defaults to 100 if not specified."
+        },
+        "startHistoryId": {
+          "type": "string",
+          "description": "Starting point for retrieving history records. Provide a historyId from a previous response or message to retrieve all changes after that point. History IDs are valid for at least a week but may expire sooner in rare cases. If an HTTP 404 error occurs, perform a full sync. Omit this parameter for the initial sync request."
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "list_labels",
+    "title": "List Labels",
+    "description": "Retrieves all labels in the user's mailbox. Labels are used to organize and categorize emails in Gmail.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address or the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "create_label",
+    "title": "Create Label",
+    "description": "Creates a new custom label in Gmail for organizing messages and threads. Labels can be configured with specific visibility settings in the Gmail web interface.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address or the special value `me` to indicate the authenticated user.",
+          "type": "string"
+        },
+        "labelListVisibility": {
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "type": "string",
+          "description": "Controls whether this label appears in the label list in Gmail's web interface."
+        },
+        "messageListVisibility": {
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "type": "string",
+          "description": "Controls whether messages with this label are visible in the message list in Gmail's web interface."
+        },
+        "name": {
+          "type": "string",
+          "description": "The display name for the label as it appears in Gmail."
+        },
+        "type": {
+          "enum": [
+            "system",
+            "user"
+          ],
+          "type": "string",
+          "description": "The owner type for the label. User labels are created and managed by the user and can be applied to any message or thread. System labels are internally created and cannot be modified or deleted by users."
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "get_label",
+    "title": "Get Label",
+    "description": "Retrieves a specific Gmail label by its ID. Use this to fetch detailed information about a label, such as its name, visibility settings, and other metadata.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address or the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the label to retrieve.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "update_label",
+    "title": "Update Label",
+    "description": "Updates an existing Gmail label with new properties such as display name and visibility settings. Only user-created labels can be modified; system labels cannot be changed.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the label to update.",
+          "type": "string"
+        },
+        "labelListVisibility": {
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "type": "string",
+          "description": "Controls whether the label appears in the label list in Gmail's web interface."
+        },
+        "messageListVisibility": {
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "type": "string",
+          "description": "Controls whether messages with this label are visible in the message list in Gmail's web interface."
+        },
+        "name": {
+          "type": "string",
+          "description": "The display name of the label as shown to the user in Gmail."
+        },
+        "type": {
+          "enum": [
+            "system",
+            "user"
+          ],
+          "type": "string",
+          "description": "The owner type of the label. User labels can be modified and deleted; system labels are managed by Gmail and cannot be altered."
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "update_label_partial",
+    "title": "Update Label Partial",
+    "description": "Update properties of a Gmail label using partial update semantics. Modify visibility settings, display name, or other label attributes without replacing the entire label configuration.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the label to update.",
+          "type": "string"
+        },
+        "labelListVisibility": {
+          "enum": [
+            "labelShow",
+            "labelShowIfUnread",
+            "labelHide"
+          ],
+          "type": "string",
+          "description": "Controls whether this label appears in the label list within Gmail's web interface."
+        },
+        "messageListVisibility": {
+          "enum": [
+            "show",
+            "hide"
+          ],
+          "type": "string",
+          "description": "Controls whether messages with this label are visible in the message list within Gmail's web interface."
+        },
+        "name": {
+          "type": "string",
+          "description": "The human-readable name displayed for this label in the Gmail interface."
+        },
+        "type": {
+          "enum": [
+            "system",
+            "user"
+          ],
+          "type": "string",
+          "description": "Indicates whether this is a system label (created and managed by Gmail) or a user label (created and managed by the user). System labels cannot be modified or deleted, while user labels can be fully customized."
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "delete_label",
+    "title": "Delete Label",
+    "description": "Permanently deletes a label and removes it from all messages and threads it is applied to. This action cannot be undone.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the label to delete.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "delete_messages_batch",
+    "title": "Delete Messages Batch",
+    "description": "Move multiple messages to the Trash (soft delete, recoverable). ⚠️ 不是永久删除。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address or the special value `me` to indicate the authenticated user.",
+          "type": "string"
+        },
+        "ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "An array of message IDs to delete. The order of IDs is not significant."
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "update_message_labels_batch",
+    "title": "Update Message Labels Batch",
+    "description": "Modifies labels on specified messages by adding and/or removing label IDs. Supports batch operations on up to 1000 messages per request.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "addLabelIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Label IDs to add to the specified messages. Order is not significant."
+        },
+        "ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "The message IDs to modify. Maximum of 1000 IDs per request."
+        },
+        "removeLabelIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Label IDs to remove from the specified messages. Order is not significant."
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "get_message",
+    "title": "Get Message",
+    "description": "Retrieves a specific message by ID from the user's mailbox. Supports multiple output formats including full message content, headers only, or raw RFC 2822 format.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address or the special value `me` to indicate the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The ID of the message to retrieve, typically obtained from messages.list, messages.insert, or messages.import operations.",
+          "type": "string"
+        },
+        "format": {
+          "enum": [
+            "minimal",
+            "full",
+            "raw",
+            "metadata"
+          ],
+          "type": "string",
+          "description": "The format in which to return the message content and structure."
+        },
+        "metadataHeaders": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "When format is set to `metadata`, specify which message headers to include in the response. Headers should be provided as an array of header names."
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "delete_message",
+    "title": "Delete Message",
+    "description": "Move a message to the Trash (soft delete, recoverable). ⚠️ 不是永久删除。Requires gmail.modify scope.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The email address of the user whose message will be deleted. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the message to delete.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "import_message",
+    "title": "Import Message",
+    "description": "Imports a message into the user's mailbox with standard email delivery scanning and classification. The message is processed similarly to SMTP delivery, with a maximum size limit of 150MB.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value 'me' to reference the authenticated user.",
+          "type": "string"
+        },
+        "deleted": {
+          "type": "boolean",
+          "description": "Mark the message as permanently deleted and only visible to Google Vault administrators. Only applicable for Google Workspace accounts."
+        },
+        "internalDateSource": {
+          "enum": [
+            "receivedTime",
+            "dateHeader"
+          ],
+          "type": "string",
+          "description": "Determines the source for Gmail's internal date assignment to the message."
+        },
+        "neverMarkSpam": {
+          "type": "boolean",
+          "description": "Prevent Gmail's spam classifier from marking this message as SPAM, regardless of its classification decision."
+        },
+        "processForCalendar": {
+          "type": "boolean",
+          "description": "Automatically process calendar invitations in the message and add any extracted meetings to the user's Google Calendar."
+        },
+        "classificationLabelValues": {
+          "items": {
+            "additionalProperties": true,
+            "description": "Classification Labels applied to the email message. Classification Labels are different from Gmail inbox labels. Only used for Google Workspace accounts. [Learn more about classification labels](https://support.google.com/a/answer/9292382).",
+            "properties": {
+              "fields": {
+                "items": {
+                  "additionalProperties": true,
+                  "description": "Field values for a classification label.",
+                  "properties": {
+                    "fieldId": {
+                      "type": "string",
+                      "description": "Required. The field ID for the Classification Label Value. Maps to the ID field of the Google Drive `Label.Field` object."
+                    },
+                    "selection": {
+                      "type": "string",
+                      "description": "Selection choice ID for the selection option. Should only be set if the field type is `SELECTION` in the Google Drive `Label.Field` object. Maps to the id field of the Google Drive `Label.Field.SelectionOptions` resource."
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array",
+                "description": "Field values for the given classification label ID."
+              },
+              "labelId": {
+                "type": "string",
+                "description": "Required. The canonical or raw alphanumeric classification label ID. Maps to the ID field of the Google Drive Label resource."
+              }
+            },
+            "type": "object"
+          },
+          "type": "array",
+          "description": "Classification label values to apply to the message. Each classification label ID must be unique; duplicate IDs will be deduplicated arbitrarily. Only applicable for Google Workspace accounts. Available schemas can be queried using the Google Drive Labels API."
+        },
+        "labelIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "List of label IDs to apply to the imported message. Labels are applied in the order provided."
+        },
+        "email_from": {
+          "type": "string",
+          "description": "Sender email address (From header)"
+        },
+        "email_to": {
+          "type": "string",
+          "description": "Recipient email address (To header)"
+        },
+        "email_cc": {
+          "type": "string",
+          "description": "Carbon copy recipients (Cc header), comma-separated"
+        },
+        "email_bcc": {
+          "type": "string",
+          "description": "Blind carbon copy recipients (Bcc header), comma-separated"
+        },
+        "email_subject": {
+          "type": "string",
+          "description": "Email subject line"
+        },
+        "email_body": {
+          "type": "string",
+          "description": "Email body content (plain text or HTML)"
+        },
+        "email_body_is_html": {
+          "type": "boolean",
+          "description": "Whether email_body is HTML (True) or plain text (False)"
+        },
+        "email_reply_to": {
+          "type": "string",
+          "description": "Reply-To header address"
+        },
+        "email_in_reply_to": {
+          "type": "string",
+          "description": "In-Reply-To header (Message-ID of original message)"
+        },
+        "email_references": {
+          "type": "string",
+          "description": "References header (Message-IDs of related messages), space-separated"
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "list_messages",
+    "title": "List Messages",
+    "description": "Retrieves a list of messages from the user's mailbox, with optional filtering by labels and inclusion of spam/trash folders. Supports pagination through the maxResults parameter.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "includeSpamTrash": {
+          "type": "boolean",
+          "description": "Include messages from SPAM and TRASH folders in the results. Defaults to false if not specified."
+        },
+        "labelIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Filter results to only include messages with labels matching all specified label IDs. Messages within the same thread may have different labels. Provide as an array of label ID strings."
+        },
+        "maxResults": {
+          "type": "integer",
+          "description": "Maximum number of messages to return per request. Defaults to 100 if not specified."
+        },
+        "from_address": {
+          "type": "string",
+          "description": "Filter messages from a specific sender email address"
+        },
+        "to_address": {
+          "type": "string",
+          "description": "Filter messages to a specific recipient email address"
+        },
+        "subject_contains": {
+          "type": "string",
+          "description": "Filter messages with subject containing this text"
+        },
+        "has_attachment": {
+          "type": "boolean",
+          "description": "Filter messages that have attachments"
+        },
+        "is_unread": {
+          "type": "boolean",
+          "description": "Filter unread messages only"
+        },
+        "is_starred": {
+          "type": "boolean",
+          "description": "Filter starred messages only"
+        },
+        "before_date": {
+          "type": "string",
+          "description": "Filter messages before this date (YYYY/MM/DD format)"
+        },
+        "after_date": {
+          "type": "string",
+          "description": "Filter messages after this date (YYYY/MM/DD format)"
+        },
+        "custom_query": {
+          "type": "string",
+          "description": "Custom Gmail query string for advanced filters (e.g., 'rfc822msgid:<id>')"
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "insert_message",
+    "title": "Insert Message",
+    "description": "Inserts a message directly into the user's mailbox, bypassing scanning and classification, similar to IMAP APPEND. This operation does not send a message but adds it to the mailbox with optional metadata.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value 'me' to refer to the authenticated user.",
+          "type": "string"
+        },
+        "deleted": {
+          "type": "boolean",
+          "description": "Mark the message as permanently deleted and only visible to Google Vault administrators. Only applicable for Google Workspace accounts."
+        },
+        "internalDateSource": {
+          "enum": [
+            "receivedTime",
+            "dateHeader"
+          ],
+          "type": "string",
+          "description": "Determines the source for Gmail's internal date assigned to the message."
+        },
+        "classificationLabelValues": {
+          "items": {
+            "additionalProperties": true,
+            "description": "Classification Labels applied to the email message. Classification Labels are different from Gmail inbox labels. Only used for Google Workspace accounts. [Learn more about classification labels](https://support.google.com/a/answer/9292382).",
+            "properties": {
+              "fields": {
+                "items": {
+                  "additionalProperties": true,
+                  "description": "Field values for a classification label.",
+                  "properties": {
+                    "fieldId": {
+                      "type": "string",
+                      "description": "Required. The field ID for the Classification Label Value. Maps to the ID field of the Google Drive `Label.Field` object."
+                    },
+                    "selection": {
+                      "type": "string",
+                      "description": "Selection choice ID for the selection option. Should only be set if the field type is `SELECTION` in the Google Drive `Label.Field` object. Maps to the id field of the Google Drive `Label.Field.SelectionOptions` resource."
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array",
+                "description": "Field values for the given classification label ID."
+              },
+              "labelId": {
+                "type": "string",
+                "description": "Required. The canonical or raw alphanumeric classification label ID. Maps to the ID field of the Google Drive Label resource."
+              }
+            },
+            "type": "object"
+          },
+          "type": "array",
+          "description": "Classification label values to apply to the message. Each classification label ID must be unique; duplicate IDs will be deduplicated arbitrarily. Only applicable for Google Workspace accounts. Available schemas can be queried via the Google Drive Labels API."
+        },
+        "labelIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "List of label IDs to apply to this message. Labels are applied in the order provided."
+        },
+        "email_from": {
+          "type": "string",
+          "description": "Sender email address (From header)"
+        },
+        "email_to": {
+          "type": "string",
+          "description": "Recipient email address (To header)"
+        },
+        "email_cc": {
+          "type": "string",
+          "description": "Carbon copy recipients (Cc header), comma-separated"
+        },
+        "email_bcc": {
+          "type": "string",
+          "description": "Blind carbon copy recipients (Bcc header), comma-separated"
+        },
+        "email_subject": {
+          "type": "string",
+          "description": "Email subject line"
+        },
+        "email_body": {
+          "type": "string",
+          "description": "Email body content (plain text or HTML)"
+        },
+        "email_body_is_html": {
+          "type": "boolean",
+          "description": "Whether email_body is HTML (True) or plain text (False)"
+        },
+        "email_reply_to": {
+          "type": "string",
+          "description": "Reply-To header address"
+        },
+        "email_in_reply_to": {
+          "type": "string",
+          "description": "In-Reply-To header (Message-ID of original message)"
+        },
+        "email_references": {
+          "type": "string",
+          "description": "References header (Message-IDs of related messages), space-separated"
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "update_message_labels",
+    "title": "Update Message Labels",
+    "description": "Updates the labels applied to a specific message by adding and/or removing label IDs. You can modify up to 100 labels per request.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The email address of the user whose message will be modified. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the message to modify.",
+          "type": "string"
+        },
+        "addLabelIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "A list of label IDs to add to the message. Maximum of 100 labels can be added in a single request."
+        },
+        "removeLabelIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "A list of label IDs to remove from the message. Maximum of 100 labels can be removed in a single request."
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "send_message",
+    "title": "Send Message",
+    "description": "Sends an email message to recipients specified in the To, Cc, and Bcc headers. The message is delivered immediately to all specified recipients.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The email address of the user sending the message. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "classificationLabelValues": {
+          "items": {
+            "additionalProperties": true,
+            "description": "Classification Labels applied to the email message. Classification Labels are different from Gmail inbox labels. Only used for Google Workspace accounts. [Learn more about classification labels](https://support.google.com/a/answer/9292382).",
+            "properties": {
+              "fields": {
+                "items": {
+                  "additionalProperties": true,
+                  "description": "Field values for a classification label.",
+                  "properties": {
+                    "fieldId": {
+                      "type": "string",
+                      "description": "Required. The field ID for the Classification Label Value. Maps to the ID field of the Google Drive `Label.Field` object."
+                    },
+                    "selection": {
+                      "type": "string",
+                      "description": "Selection choice ID for the selection option. Should only be set if the field type is `SELECTION` in the Google Drive `Label.Field` object. Maps to the id field of the Google Drive `Label.Field.SelectionOptions` resource."
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array",
+                "description": "Field values for the given classification label ID."
+              },
+              "labelId": {
+                "type": "string",
+                "description": "Required. The canonical or raw alphanumeric classification label ID. Maps to the ID field of the Google Drive Label resource."
+              }
+            },
+            "type": "object"
+          },
+          "type": "array",
+          "description": "Classification labels to apply to the message for organizational purposes. Each classification label ID must be unique; duplicate IDs will be deduplicated arbitrarily. Only available for Google Workspace accounts."
+        },
+        "labelIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "IDs of labels to apply to the message. Labels help organize and categorize messages in Gmail."
+        },
+        "email_from": {
+          "type": "string",
+          "description": "Sender email address (From header)"
+        },
+        "email_to": {
+          "type": "string",
+          "description": "Recipient email address (To header)"
+        },
+        "email_cc": {
+          "type": "string",
+          "description": "Carbon copy recipients (Cc header), comma-separated"
+        },
+        "email_bcc": {
+          "type": "string",
+          "description": "Blind carbon copy recipients (Bcc header), comma-separated"
+        },
+        "email_subject": {
+          "type": "string",
+          "description": "Email subject line"
+        },
+        "email_body": {
+          "type": "string",
+          "description": "Email body content (plain text or HTML)"
+        },
+        "email_body_is_html": {
+          "type": "boolean",
+          "description": "Whether email_body is HTML (True) or plain text (False)"
+        },
+        "email_reply_to": {
+          "type": "string",
+          "description": "Reply-To header address"
+        },
+        "email_in_reply_to": {
+          "type": "string",
+          "description": "In-Reply-To header (Message-ID of original message)"
+        },
+        "email_references": {
+          "type": "string",
+          "description": "References header (Message-IDs of related messages), space-separated"
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "move_message_to_trash",
+    "title": "Move Message to Trash",
+    "description": "Move a message to the Trash (soft delete, recoverable).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address or the special value `me` to reference the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the message to move to trash.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "remove_message_from_trash",
+    "title": "Remove Message From Trash",
+    "description": "Restores a message from the trash by removing it from the trash folder. The message will be returned to its previous labels or inbox.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The email address of the user whose message should be restored. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the message to restore from trash.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "get_message_attachment",
+    "title": "Get Message Attachment",
+    "description": "Retrieves a specific attachment from a Gmail message. Use this to download or access attachment metadata by providing the message ID and attachment ID.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The email address of the account owner. Use the special value `me` to refer to the authenticated user's account.",
+          "type": "string"
+        },
+        "messageId": {
+          "description": "The unique identifier of the message containing the attachment.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the attachment to retrieve.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "messageId",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "get_auto_forwarding",
+    "title": "Get Auto Forwarding",
+    "description": "Retrieves the auto-forwarding configuration for the specified Gmail account. This includes the forwarding address and whether auto-forwarding is enabled.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The Gmail account identifier. Use the email address associated with the account, or use the special value \"me\" to refer to the authenticated user's account.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "get_vacation_settings",
+    "title": "Get Vacation Settings",
+    "description": "Retrieves the vacation responder settings for a Gmail account, including whether auto-reply is enabled and the message content.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The Gmail user account identifier. Use 'me' to refer to the authenticated user, or provide a specific email address.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "list_cse_identities",
+    "title": "List CSE Identities",
+    "description": "Retrieves all client-side encrypted identities for an authenticated user. Administrators with domain-wide delegation can manage identities for their organization, while users managing their own identities require hardware key encryption to be enabled.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's primary email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "pageSize": {
+          "type": "integer",
+          "description": "Maximum number of identities to return per page. If not specified, defaults to 20 entries."
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "create_cse_identity",
+    "title": "Create CSE Identity",
+    "description": "Creates and configures a client-side encryption identity for sending encrypted mail from a user account. The S/MIME certificate is published to a shared domain-wide directory, enabling secure communication within a Google Workspace organization.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The requester's primary email address. Use the special value `me` to indicate the authenticated user.",
+          "type": "string"
+        },
+        "emailAddress": {
+          "type": "string",
+          "description": "The email address for the sending identity. Must be the primary email address of the authenticated user."
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "get_cse_identity",
+    "title": "Get CSE Identity",
+    "description": "Retrieves a client-side encryption identity configuration for a specified email address. Administrators require service account with domain-wide delegation authority, while users require hardware key encryption to be enabled.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The requester's primary email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "cseEmailAddress": {
+          "description": "The primary email address associated with the client-side encryption identity configuration to retrieve.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cseEmailAddress",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "delete_cse_identity",
+    "title": "Delete CSE Identity",
+    "description": "Permanently deletes a client-side encryption identity, preventing further use for sending encrypted messages. The identity cannot be restored; create a new identity with the same configuration if needed.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's primary email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "cseEmailAddress": {
+          "description": "The primary email address associated with the client-side encryption identity to be deleted.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cseEmailAddress",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "update_cse_identity_keypair",
+    "title": "Update CSE Identity Keypair",
+    "description": "Associates a new key pair with an existing client-side encryption identity. The updated key pair must validate against Google's S/MIME certificate profiles. Requires either domain-wide delegation authority for administrators or hardware key encryption enabled for individual users.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user identifier. Use the special value `me` to refer to the authenticated user, or provide the user's primary email address.",
+          "type": "string"
+        },
+        "emailAddress": {
+          "type": "string",
+          "description": "The email address for the sending identity. Must be the primary email address of the authenticated user."
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "list_cse_keypairs",
+    "title": "List CSE Keypairs",
+    "description": "Retrieves all client-side encryption key pairs for a user. Administrators with domain-wide delegation can manage keypairs for users in their organization, while individual users require hardware key encryption to be enabled.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's primary email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "pageSize": {
+          "type": "integer",
+          "description": "Maximum number of key pairs to return per page. If not specified, defaults to 20 entries."
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "create_cse_keypair",
+    "title": "Create CSE Keypair",
+    "description": "Creates and uploads a client-side encryption S/MIME public key certificate chain and private key metadata for Gmail. Requires either domain-wide delegation authority for administrators or hardware key encryption enabled for individual users.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's primary email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "pkcs7": {
+          "type": "string",
+          "description": "The public key and its certificate chain in PKCS#7 format with PEM encoding and ASCII armor."
+        },
+        "privateKeyMetadata": {
+          "items": {
+            "additionalProperties": true,
+            "description": "Metadata for a private key instance.",
+            "properties": {
+              "hardwareKeyMetadata": {
+                "additionalProperties": true,
+                "description": "Metadata for hardware keys.",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "description": "Description about the hardware key."
+                  }
+                },
+                "type": "object"
+              },
+              "kaclsKeyMetadata": {
+                "additionalProperties": true,
+                "description": "Metadata for a private key instance managed by an external key access control list service.",
+                "properties": {
+                  "kaclsData": {
+                    "type": "string",
+                    "description": "Opaque data generated and used by the key access control list service. Maximum size: 8 KiB."
+                  },
+                  "kaclsUri": {
+                    "type": "string",
+                    "description": "The URI of the key access control list service that manages the private key."
+                  }
+                },
+                "type": "object"
+              },
+              "privateKeyMetadataId": {
+                "type": "string",
+                "description": "Output only. The immutable ID for the private key metadata instance."
+              }
+            },
+            "type": "object"
+          },
+          "type": "array",
+          "description": "An ordered array of metadata objects for instances of this key pair's private key. Order significance and item structure should follow the API specification."
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "disable_cse_keypair",
+    "title": "Disable CSE Keypair",
+    "description": "Disables a client-side encryption key pair, preventing the user from decrypting incoming CSE messages or signing outgoing CSE mail. The key pair can be re-enabled later using enable_cse_keypair, or permanently deleted after 30 days using obliterate_cse_keypair.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's primary email address. Use the special value 'me' to refer to the authenticated user.",
+          "type": "string"
+        },
+        "keyPairId": {
+          "description": "The unique identifier of the key pair to disable.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "keyPairId",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "enable_cse_keypair",
+    "title": "Enable CSE Keypair",
+    "description": "Reactivates a previously disabled client-side encryption key pair for use with associated encryption identities. Administrators require service account with domain-wide delegation authority; end users require hardware key encryption to be enabled.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's primary email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "keyPairId": {
+          "description": "The unique identifier of the key pair to reactivate.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "keyPairId",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "get_cse_keypair",
+    "title": "Get CSE Keypair",
+    "description": "Retrieves a client-side encryption key pair for Gmail. Administrators require service account authorization with domain-wide delegation, while users must have hardware key encryption enabled.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The email address of the user whose key pair is being retrieved. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "keyPairId": {
+          "description": "The unique identifier of the encryption key pair to retrieve.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "keyPairId",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "delete_cse_keypair_permanently",
+    "title": "Delete CSE Keypair Permanently",
+    "description": "Permanently and immediately deletes a client-side encryption key pair. The key pair must be disabled for at least 30 days before obliteration. Once obliterated, all messages encrypted with this key become permanently inaccessible to all users.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The email address of the user whose key pair will be obliterated. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "keyPairId": {
+          "description": "The unique identifier of the key pair to permanently delete.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "keyPairId",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "list_delegates",
+    "title": "List Delegates",
+    "description": "Retrieves the list of delegates for the specified Gmail account. This operation requires service account credentials with domain-wide delegation authority.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The Gmail user account identifier. Use the special value 'me' to refer to the authenticated user, or provide the user's full email address.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "get_delegate",
+    "title": "Get Delegate",
+    "description": "Retrieves the delegate relationship for a specified email address. This operation requires service account clients with domain-wide authority and uses the delegate's primary email address (not aliases).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The email address of the user whose delegates are being queried. Use the special value 'me' to refer to the authenticated user.",
+          "type": "string"
+        },
+        "delegateEmail": {
+          "description": "The primary email address of the delegate whose relationship details should be retrieved. Email aliases cannot be used; the primary email address is required.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "delegateEmail",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "list_filters",
+    "title": "List Filters",
+    "description": "Retrieves all message filters configured for a Gmail account. Filters define rules for automatically organizing, labeling, or processing incoming messages.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The Gmail user account identifier. Use the special value 'me' to refer to the authenticated user, or provide a specific email address.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "get_filter",
+    "title": "Get Filter",
+    "description": "Retrieves a specific Gmail filter by its ID. Use this to fetch the configuration and rules of an existing filter.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The Gmail account identifier. Use 'me' to refer to the authenticated user, or provide the user's email address.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the filter to retrieve.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "delete_filter",
+    "title": "Delete Filter",
+    "description": "Permanently deletes a specified Gmail filter. This action is immediate and cannot be undone.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The email address of the user whose filter will be deleted. Use the special value \"me\" to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the filter to be deleted.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "list_forwarding_addresses",
+    "title": "List Forwarding Addresses",
+    "description": "Retrieves all forwarding addresses configured for the specified Gmail account. Forwarding addresses are alternative email addresses where incoming messages can be automatically sent.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The Gmail account identifier. Use the authenticated user's email address, or specify 'me' to refer to the currently authenticated user.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "get_forwarding_address",
+    "title": "Get Forwarding Address",
+    "description": "Retrieves the configuration details for a specified forwarding address associated with a Gmail account. Use this to view forwarding settings for a particular email address.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The Gmail account identifier. Use the special value 'me' to refer to the authenticated user's account, or provide the user's full email address.",
+          "type": "string"
+        },
+        "forwardingEmail": {
+          "description": "The email address for which forwarding configuration should be retrieved.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "forwardingEmail",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "delete_forwarding_address",
+    "title": "Delete Forwarding Address",
+    "description": "Deletes a forwarding address and revokes any associated verification. This operation requires service account credentials with domain-wide delegation authority.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address or 'me' to reference the authenticated user.",
+          "type": "string"
+        },
+        "forwardingEmail": {
+          "description": "The forwarding email address to delete.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "forwardingEmail",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "list_send_as_aliases",
+    "title": "List Send As Aliases",
+    "description": "Retrieves all send-as aliases configured for the specified Gmail account, including the primary email address and any custom 'from' aliases.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The Gmail account identifier. Use 'me' to reference the authenticated user's account.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "get_send_as_alias",
+    "title": "Get Send As Alias",
+    "description": "Retrieves a specific send-as alias configuration for a user. Returns an HTTP 404 error if the specified email address is not configured as a send-as alias.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value 'me' to refer to the authenticated user.",
+          "type": "string"
+        },
+        "sendAsEmail": {
+          "description": "The email address of the send-as alias to retrieve.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sendAsEmail",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "update_send_as_alias",
+    "title": "Update Send As Alias",
+    "description": "Updates a send-as alias configuration for a Gmail account, including display name, reply-to address, and optional HTML signature. Service accounts with domain-wide delegation can update non-primary addresses; standard users can only modify their own aliases.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The Gmail user's email address. Use the special value 'me' to refer to the authenticated user.",
+          "type": "string"
+        },
+        "sendAsEmail": {
+          "type": "string",
+          "description": "The email address displayed in the 'From:' header for messages sent using this alias. This field is read-only and cannot be modified after creation."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The display name shown in the 'From:' header for messages sent using this alias. If empty for custom addresses, Gmail will use the primary account's name. Updates to this field may be silently ignored if the admin has restricted name format changes."
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Whether this alias is the default 'From:' address for new messages and auto-replies. Only 'true' can be written; setting this to true automatically sets the previous default address to false. Every Gmail account must have exactly one default send-as address."
+        },
+        "replyToAddress": {
+          "type": "string",
+          "description": "An optional email address to include in the 'Reply-To:' header for messages sent using this alias. Leave empty to omit the 'Reply-To:' header."
+        },
+        "signature": {
+          "type": "string",
+          "description": "An optional HTML signature appended to new emails composed with this alias in Gmail's web interface. Gmail will sanitize the HTML before saving."
+        },
+        "host": {
+          "type": "string",
+          "description": "The hostname of the SMTP server used for sending mail through this alias."
+        },
+        "password": {
+          "type": "string",
+          "description": "The password for SMTP authentication. This write-only field is used only during creation or updates and is never returned in responses."
+        },
+        "port": {
+          "type": "string",
+          "description": "The port number of the SMTP server."
+        },
+        "securityMode": {
+          "enum": [
+            "securityModeUnspecified",
+            "none",
+            "ssl",
+            "starttls"
+          ],
+          "type": "string",
+          "description": "The security protocol for SMTP communication."
+        },
+        "username": {
+          "type": "string",
+          "description": "The username for SMTP authentication. This write-only field is used only during creation or updates and is never returned in responses."
+        },
+        "treatAsAlias": {
+          "type": "boolean",
+          "description": "Whether Gmail should treat this address as an alias for the user's primary email address. This setting applies only to custom 'from' aliases."
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "update_send_as_alias_partial",
+    "title": "Update Send As Alias Partial",
+    "description": "Partially update a send-as alias configuration for a Gmail account. Use this to modify display name, default status, reply-to address, signature, SMTP settings, or alias treatment without replacing the entire resource.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The Gmail account identifier. Use 'me' to refer to the authenticated user, or provide a specific email address.",
+          "type": "string"
+        },
+        "sendAsEmail": {
+          "type": "string",
+          "description": "The email address displayed in the 'From:' header for messages sent using this alias. This field is read-only for updates and can only be set during alias creation."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The display name shown in the 'From:' header for messages sent using this alias. If empty, Gmail uses the primary account's name. Updates may be silently ignored if the admin has restricted name format changes."
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Set to true to make this the default 'From:' address for new messages and auto-replies. Only true is a valid value for updates; setting this true automatically sets the previous default to false."
+        },
+        "replyToAddress": {
+          "type": "string",
+          "description": "An optional email address to include in the 'Reply-To:' header for messages sent using this alias. Leave empty to omit the Reply-To header."
+        },
+        "signature": {
+          "type": "string",
+          "description": "An optional HTML signature appended to new emails composed with this alias in Gmail's web interface. This signature is not added to replies or forwarded messages."
+        },
+        "host": {
+          "type": "string",
+          "description": "The hostname of the SMTP server used to send mail through this alias."
+        },
+        "password": {
+          "type": "string",
+          "description": "The password for SMTP authentication. This write-only field is never returned in responses and must be provided when configuring SMTP settings."
+        },
+        "port": {
+          "type": "string",
+          "description": "The port number of the SMTP server. Common values are 25, 465, or 587 depending on the security mode."
+        },
+        "securityMode": {
+          "enum": [
+            "securityModeUnspecified",
+            "none",
+            "ssl",
+            "starttls"
+          ],
+          "type": "string",
+          "description": "The security protocol for SMTP communication. Determines how the connection to the SMTP server is encrypted or secured."
+        },
+        "username": {
+          "type": "string",
+          "description": "The username for SMTP authentication. This write-only field is never returned in responses and must be provided when configuring SMTP settings."
+        },
+        "treatAsAlias": {
+          "type": "boolean",
+          "description": "Whether Gmail should treat this address as an alias for the user's primary email address. This setting only applies to custom 'from' aliases and affects how Gmail handles replies and threading."
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "send_verification_email_to_send_as_alias",
+    "title": "Send Verification Email to Send As Alias",
+    "description": "Sends a verification email to a send-as alias address to confirm ownership. The alias must have a pending verification status and requires service account with domain-wide delegation authority.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value 'me' to refer to the authenticated user.",
+          "type": "string"
+        },
+        "sendAsEmail": {
+          "description": "The send-as alias email address that requires verification.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sendAsEmail",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "get_smime_info",
+    "title": "Get Smime Info",
+    "description": "Retrieves the S/MIME configuration for a specified send-as alias. This allows you to access the details of a specific S/MIME certificate associated with an email alias.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "sendAsEmail": {
+          "description": "The email address that appears in the From header for messages sent using this send-as alias.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The immutable identifier for the S/MIME configuration.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "sendAsEmail",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "delete_send_as_smime_config",
+    "title": "Delete Send As Smime Config",
+    "description": "Deletes the S/MIME configuration for a specified send-as alias. This removes the security certificate associated with the alias used for signing and encrypting outgoing emails.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "sendAsEmail": {
+          "description": "The email address that appears in the From header for messages sent using this send-as alias.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The immutable identifier for the S/MIME configuration to delete.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "sendAsEmail",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "list_smime_configs",
+    "title": "List Smime Configs",
+    "description": "Lists all S/MIME configurations for a specified send-as alias. S/MIME configs define the certificates and encryption settings used when sending emails from this alias.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "sendAsEmail": {
+          "description": "The email address configured as a send-as alias. This is the address that appears in the From header for emails sent using this alias.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sendAsEmail",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "create_smime_config",
+    "title": "Create SMIME Config",
+    "description": "Upload and configure an S/MIME certificate for a send-as alias. The certificate must be provided in PKCS#12 format containing a private/public key pair and certificate chain.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "sendAsEmail": {
+          "description": "The email address that will appear in the From header for messages sent using this S/MIME alias.",
+          "type": "string"
+        },
+        "encryptedKeyPassword": {
+          "type": "string",
+          "description": "Password for the encrypted private key, required if the PKCS#12 certificate is password-protected."
+        },
+        "expiration": {
+          "type": "string",
+          "description": "Certificate expiration timestamp in milliseconds since epoch (Unix time)."
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Whether to set this S/MIME certificate as the default for this send-as address."
+        },
+        "pkcs12": {
+          "type": "string",
+          "description": "The S/MIME certificate in PKCS#12 format. Must contain a single private/public key pair and certificate chain. The private key may be encrypted; if so, provide the password in encryptedKeyPassword."
+        }
+      },
+      "required": [
+        "sendAsEmail",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "set_default_smime_config",
+    "title": "Set Default Smime Config",
+    "description": "Sets the default S/MIME configuration for the specified send-as alias. This determines which S/MIME certificate will be used by default when sending emails from this alias.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "sendAsEmail": {
+          "description": "The email address that appears in the From header for mail sent using this send-as alias.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The immutable identifier for the S/MIME configuration to set as default.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "sendAsEmail",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "get_thread",
+    "title": "Get Thread",
+    "description": "Retrieves a specific email thread by ID. Returns thread messages in the requested format with optional filtering of metadata headers.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The email address of the user whose thread should be retrieved. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the thread to retrieve.",
+          "type": "string"
+        },
+        "format": {
+          "enum": [
+            "full",
+            "metadata",
+            "minimal"
+          ],
+          "type": "string",
+          "description": "The format in which to return thread messages. Controls the level of detail included in the response."
+        },
+        "metadataHeaders": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "When format is set to metadata, specify which email headers to include in the response. Headers should be provided as an array of header names."
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "delete_thread",
+    "title": "Delete Thread",
+    "description": "Move a thread to the Trash (soft delete, recoverable). ⚠️ 不是永久删除。Requires gmail.modify scope.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The email address of the user whose thread will be deleted. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the thread to delete.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "list_threads",
+    "title": "List Threads",
+    "description": "Retrieves a list of message threads from the user's mailbox, with optional filtering by labels, search query, and inclusion of spam/trash folders.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "includeSpamTrash": {
+          "type": "boolean",
+          "description": "Include threads from the SPAM and TRASH folders in the results."
+        },
+        "labelIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Filter results to only return threads that have all of the specified label IDs. Provide as an array of label ID strings."
+        },
+        "maxResults": {
+          "type": "integer",
+          "description": "Maximum number of threads to return in the response."
+        },
+        "q": {
+          "type": "string",
+          "description": "Filter results using Gmail search query syntax (e.g., sender, subject, date filters, read status). Not supported when using the gmail.metadata scope."
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "update_thread_labels",
+    "title": "Update Thread Labels",
+    "description": "Modifies the labels applied to a thread, affecting all messages within it. Supports adding and removing labels in a single operation.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The ID of the thread to modify.",
+          "type": "string"
+        },
+        "addLabelIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "A list of label IDs to add to this thread. Up to 100 labels can be added per request."
+        },
+        "removeLabelIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "A list of label IDs to remove from this thread. Up to 100 labels can be removed per request."
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "move_thread_to_trash",
+    "title": "Move Thread to Trash",
+    "description": "Moves a thread and all its associated messages to the trash. The thread and its messages can be permanently deleted or recovered from trash.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address or the special value 'me' to reference the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the thread to move to trash.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  },
+  {
+    "name": "remove_thread_from_trash",
+    "title": "Remove Thread From Trash",
+    "description": "Restores a thread from trash by removing it and all its associated messages from the trash folder.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The user's email address. Use the special value `me` to refer to the authenticated user.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The unique identifier of the thread to restore from trash.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "_meta": {
+      "fastmcp": {
+        "tags": []
+      }
+    }
+  }
+]

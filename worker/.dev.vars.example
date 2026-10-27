@@ -1,0 +1,50 @@
+# ALL VALUES BELOW ARE MOCKS. Nothing here is a real account, key or password.
+# Copy to .dev.vars for local development only. In production use: npx wrangler secret put <NAME>
+# 以下全部是 mock 假值，不是任何真实账号、密钥或密码。
+
+# --- access control (generate your own: openssl rand -hex 32) ---
+STATIC_TOKEN=mock-static-token-0000000000000000000000000000000000000000000000000000
+TOKEN_KEY=mock-token-key-000000000000000000000000000000000000000000000000000000
+APPROVE_SECRET=mock-approve-secret-000000000000
+
+# --- iCloud (use an Apple app-specific password, never your Apple ID password) ---
+ICLOUD_EMAIL=someone@example.com
+ICLOUD_MAIL_ADDRESS=someone@example.com
+ICLOUD_PASSWORD=mock-abcd-efgh-ijkl-mnop
+
+# --- Google: two accounts, labelled "personal" and "work" (labels are mocks too; rename freely) ---
+# Gmail reads <label>_client_id / <label>_client_secret / <label>_refresh_token
+personal_client_id=mock-client-id.apps.googleusercontent.example
+personal_client_secret=mock-client-secret
+personal_refresh_token=mock-refresh-token-personal
+work_client_id=mock-client-id.apps.googleusercontent.example
+work_client_secret=mock-client-secret
+work_refresh_token=mock-refresh-token-work
+# Calendar / Drive read <kind>_client_id, <kind>_client_secret, <kind>_<label>_refresh
+calendar_client_id=mock-client-id.apps.googleusercontent.example
+calendar_client_secret=mock-client-secret
+calendar_personal_refresh=mock-refresh-token-personal
+calendar_work_refresh=mock-refresh-token-work
+drive_client_id=mock-client-id.apps.googleusercontent.example
+drive_client_secret=mock-client-secret
+drive_personal_refresh=mock-refresh-token-personal
+drive_work_refresh=mock-refresh-token-work
+
+# --- Microsoft Outlook (Graph) ---
+outlook_client_id=00000000-0000-0000-0000-000000000000
+outlook_tenant=common
+outlook_refresh=mock-refresh-token-outlook
+
+# --- Gemini grounding (Vertex AI service account) ---
+gemini_project=mock-gcp-project
+gemini_location=us-central1
+gemini_sa_email=mock-sa@mock-gcp-project.iam.gserviceaccount.example
+gemini_sa_key=mock-private-key-pem
+
+# --- Tencent ima (optional) ---
+IMA_CLIENT_ID=mock-ima-client-id
+IMA_API_KEY=mock-ima-api-key
+
+# --- bridge back to a Mac for Apple Notes / Reminders (optional) ---
+MAC_BRIDGE_URL=https://YOUR-MAC.YOUR-TAILNET.ts.net/bridge
+MAC_BRIDGE_SECRET=mock-bridge-secret

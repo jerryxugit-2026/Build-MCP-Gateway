@@ -1,0 +1,1041 @@
+[
+  {
+    "name": "auth_status",
+    "title": "Google connection status",
+    "description": "Shows whether this server is connected to Google: token presence and source (env variables or a stored in-chat login), expiry, the Google account email, granted vs missing OAuth scopes, where the credentials file lives and where the OAuth client comes from. Makes no network calls and never returns the token itself. Call it first when other tools report the server is not connected.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "setup_instructions",
+    "title": "Setup instructions",
+    "description": "Step-by-step checklist for connecting this server to Google: creating a Google Cloud project and a Desktop-app OAuth client, publishing the consent screen (mandatory — Testing-mode refresh tokens die after 7 days), downloading the client JSON and handing its PATH to set_client. Works without any credentials; the checklist shortens to 'enable the API + log in' when an OAuth client is already configured (one client serves the whole mcp-google-* line). Never asks the user to paste secrets into the chat.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "set_client",
+    "title": "Save the OAuth client",
+    "description": "Saves the OAuth client credentials from the JSON file downloaded from Google Cloud Console ('Download JSON' on a Desktop-app client). Pass the file PATH — the secret must never be pasted into the chat. The client is stored once in the shared ~/.config/mcp-google-auth/client.json (owner-only) and reused by every mcp-google-* server; tokens stay per-server. After this, call start_login.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Absolute path to the client_secret_*.json file downloaded from Google Cloud Console."
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "start_login",
+    "title": "Start the Google login",
+    "description": "First step of connecting from the chat, without editing config files or restarting the client. Returns authorizeUrl — show it to the user as a clickable link and ask them to open it in the browser ON THIS MACHINE, pick the Google account and approve access. A one-shot listener on 127.0.0.1 catches Google's redirect; the code is exchanged locally and never passes through the chat. Does not open the browser itself. The attempt lives 10 minutes; when the browser shows the success page, call finish_login.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "finish_login",
+    "title": "Finish the Google login",
+    "description": "Second step: confirms the browser consent finished, saves the tokens to an owner-only file and verifies the login with a read-only identity call, returning the account email and the granted scopes. After success every tool works immediately — no client restart. If the user granted only part of the requested permissions, the login is still saved and missingScopes lists what will not work. Logging in under a different Google account replaces the previous login (its refresh token is revoked best-effort) and the response carries previousAccountEmail so the change never goes unnoticed.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "logout",
+    "title": "Disconnect from Google",
+    "description": "Revokes the stored token at Google (oauth2.googleapis.com/revoke) and deletes the local credentials file. Tokens supplied via env variables are NOT touched — remove them from the MCP client config manually; envTokenStillSet in the response says whether any are still in effect.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "list_calendars",
+    "title": "List calendars",
+    "description": "Lists the calendars on the user's calendar list: id (use it as calendar_id in every other tool), summary, description, timeZone (IANA), accessRole (owner/writer/reader/freeBusyReader — writes need writer or owner), primary:true on the main calendar, and hidden/selected flags. The special id \"primary\" always addresses the main calendar without listing first. Paginate with page_token from nextPageToken. Calendars shared with the user but never added to their list do not appear here — address them by their explicit id.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "max_results": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 250,
+          "description": "Max calendars per page (1..250; API default 100)."
+        },
+        "page_token": {
+          "type": "string",
+          "description": "nextPageToken from the previous page."
+        },
+        "min_access_role": {
+          "type": "string",
+          "enum": [
+            "free_busy_reader",
+            "reader",
+            "writer",
+            "owner"
+          ],
+          "description": "Only calendars where the user has at least this role (e.g. writer to find writable ones)."
+        },
+        "show_hidden": {
+          "type": "boolean",
+          "description": "Include calendars the user has hidden from their list."
+        }
+      },
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "get_calendar",
+    "title": "Get a calendar",
+    "description": "Fetches one calendar-list entry: summary, description, timeZone (the calendar's default IANA zone — use it to interpret event times), accessRole, defaultReminders and primary. Works only for calendars on the user's list; for a shared calendar never added to the list, use raw_request with path calendar/v3/calendars/<id> instead.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "calendar_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The calendar id from list_calendars, or \"primary\" for the authenticated user's main calendar."
+        }
+      },
+      "required": [
+        "calendar_id"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "list_events",
+    "title": "List events",
+    "description": "Lists events on a calendar: id, summary, start/end (all-day events carry date with an EXCLUSIVE end; timed events carry dateTime), status, attendees with responseStatus, organizer, recurrence, hangoutLink, eventType. time_min/time_max bound the window (an event overlapping the window is included). single_events=true expands recurring events into individual instances — required for order_by=start_time and the right choice for questions like \"what is on my calendar this week\"; without it recurring events appear once as the series master. time_zone only changes how times are RENDERED in the response, never the events themselves. q searches summary/description/location/attendees. updated_min + show_deleted enable incremental polling (cancelled events come back as status=cancelled). Paginate with page_token from nextPageToken.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "calendar_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The calendar id from list_calendars, or \"primary\" for the authenticated user's main calendar."
+        },
+        "time_min": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Only events ending at/after this RFC3339 moment (window lower bound)."
+        },
+        "time_max": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Only events starting before this RFC3339 moment (window upper bound, exclusive)."
+        },
+        "q": {
+          "type": "string",
+          "description": "Free-text search over summary, description, location and attendees."
+        },
+        "single_events": {
+          "type": "boolean",
+          "description": "Expand recurring events into instances (required for order_by=start_time)."
+        },
+        "order_by": {
+          "type": "string",
+          "enum": [
+            "start_time",
+            "updated"
+          ],
+          "description": "Sort order; start_time works only with single_events=true. Default is unspecified order."
+        },
+        "time_zone": {
+          "type": "string",
+          "minLength": 1,
+          "description": "IANA zone the response times are rendered in (defaults to the calendar's zone)."
+        },
+        "max_results": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2500,
+          "description": "Max events per page (1..2500; API default 250)."
+        },
+        "page_token": {
+          "type": "string",
+          "description": "nextPageToken from the previous page."
+        },
+        "show_deleted": {
+          "type": "boolean",
+          "description": "Include cancelled events (status=cancelled)."
+        },
+        "updated_min": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Only events modified after this RFC3339 moment — for incremental polling; too-old values return HTTP 410."
+        },
+        "event_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "default",
+              "out_of_office",
+              "focus_time",
+              "working_location",
+              "birthday"
+            ]
+          },
+          "description": "Only these event types (e.g. [\"out_of_office\"] to see OOO blocks)."
+        }
+      },
+      "required": [
+        "calendar_id"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "get_event",
+    "title": "Get an event",
+    "description": "Fetches one event by id: summary, description, location, start/end, attendees with their responseStatus (accepted/declined/tentative/needsAction), organizer, recurrence rules, recurringEventId (present on instances of a series), conferenceData/hangoutLink (Google Meet), reminders, visibility, transparency and eventType. Works for a series master and for an individual instance id alike.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "calendar_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The calendar id from list_calendars, or \"primary\" for the authenticated user's main calendar."
+        },
+        "event_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The event id from list_events or create_event output. A recurring-instance id (masterId_20260101T100000Z from list_event_instances) addresses one occurrence."
+        },
+        "time_zone": {
+          "type": "string",
+          "minLength": 1,
+          "description": "IANA zone the response times are rendered in."
+        }
+      },
+      "required": [
+        "calendar_id",
+        "event_id"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "create_event",
+    "title": "Create an event",
+    "description": "Creates an event and returns it (id, htmlLink, start/end, attendees, hangoutLink when add_meet). Times: EITHER start_date_time + end_date_time (RFC3339; add time_zone for recurring events) OR start_date + end_date for all-day (end_date is EXCLUSIVE — the day after the last day). recurrence makes it a recurring series. attendees invites guests — but the API sends invitation emails ONLY with send_updates=all (the default notifies nobody). add_meet attaches a Google Meet link (may come back status=pending — re-run get_event for the final URL). This is a plain calendar write: it does not check for conflicts — call query_free_busy first to find a free slot. Never blindly re-send after a timeout or 5xx: the event may already exist — check with list_events first, or you will create a duplicate and re-invite everyone.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "calendar_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The calendar id from list_calendars, or \"primary\" for the authenticated user's main calendar."
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Event title."
+        },
+        "description": {
+          "type": "string",
+          "description": "Event description (plain text or simple HTML)."
+        },
+        "location": {
+          "type": "string",
+          "description": "Free-form location, e.g. a room name or address."
+        },
+        "start_date_time": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Timed event start, RFC3339 (e.g. 2026-09-01T10:00:00+02:00 or ...Z). Pair with end_date_time."
+        },
+        "end_date_time": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Timed event end, RFC3339. Pair with start_date_time."
+        },
+        "time_zone": {
+          "type": "string",
+          "minLength": 1,
+          "description": "IANA time zone for start/end (e.g. \"Europe/Berlin\"). REQUIRED for recurring events; otherwise optional when the RFC3339 offsets already say everything."
+        },
+        "start_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "All-day event start date (YYYY-MM-DD). Pair with end_date."
+        },
+        "end_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "All-day event end date, EXCLUSIVE — the day after the last day (a one-day event on the 5th ends on the 6th)."
+        },
+        "attendees": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "minLength": 3,
+                "description": "Attendee email address."
+              },
+              "optional": {
+                "type": "boolean",
+                "description": "Mark attendance as optional."
+              }
+            },
+            "required": [
+              "email"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Guest list. On update this REPLACES the whole list — fetch the event first and send the complete new list. Invitation emails go out only with send_updates=all."
+        },
+        "recurrence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "RRULE/RDATE/EXRULE/EXDATE lines (RFC 5545) making the event recurring, e.g. [\"RRULE:FREQ=WEEKLY;BYDAY=MO,WE\"]. Requires the timed pair plus time_zone."
+        },
+        "add_meet": {
+          "type": "boolean",
+          "description": "Attach a Google Meet conference. The returned conferenceData may be status=pending — re-run get_event for the final Meet link."
+        },
+        "send_updates": {
+          "type": "string",
+          "enum": [
+            "all",
+            "external_only",
+            "none"
+          ],
+          "description": "Who receives an email about this change: all guests, only guests outside your organization, or nobody. Defaults to none — attendees are NOT notified unless you pass all."
+        },
+        "use_default_reminders": {
+          "type": "boolean",
+          "description": "Use the calendar's default reminders (ignored when reminders[] is given)."
+        },
+        "reminders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "email",
+                  "popup"
+                ],
+                "description": "Reminder channel."
+              },
+              "minutes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 40320,
+                "description": "Minutes before the event start (0..40320 = 4 weeks)."
+              }
+            },
+            "required": [
+              "method",
+              "minutes"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 5,
+          "description": "Custom reminders (max 5). Setting this turns default reminders off for the event."
+        },
+        "transparency": {
+          "type": "string",
+          "enum": [
+            "opaque",
+            "transparent"
+          ],
+          "description": "opaque = the event blocks time in free/busy (default); transparent = it does not (shows as free)."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "default",
+            "public",
+            "private"
+          ],
+          "description": "Who can see event details on a shared calendar."
+        },
+        "color_id": {
+          "type": "string",
+          "description": "Event color id (\"1\"..\"11\"; the palette is fixed by Google)."
+        },
+        "guests_can_invite_others": {
+          "type": "boolean",
+          "description": "Whether guests may invite more people."
+        },
+        "guests_can_modify": {
+          "type": "boolean",
+          "description": "Whether guests may edit the event."
+        },
+        "guests_can_see_other_guests": {
+          "type": "boolean",
+          "description": "Whether guests can see the guest list."
+        }
+      },
+      "required": [
+        "calendar_id",
+        "summary"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "update_event",
+    "title": "Update an event",
+    "description": "Partially updates an event (PATCH): only the provided fields change, but a provided nested object REPLACES its predecessor wholesale — attendees replaces the entire guest list (get_event first, send the complete new list), reminders replaces all overrides, and a time change should carry BOTH the new start and end (start_date_time + end_date_time, or start_date + end_date). To reschedule one occurrence of a recurring series, pass that instance's id (from list_event_instances) as event_id; passing the series master id changes every occurrence. Guests hear about the change only with send_updates=all. Also works to update Out of Office / Focus Time blocks. Returns the updated event.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "calendar_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The calendar id from list_calendars, or \"primary\" for the authenticated user's main calendar."
+        },
+        "event_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The event id from list_events or create_event output. A recurring-instance id (masterId_20260101T100000Z from list_event_instances) addresses one occurrence."
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "New event title."
+        },
+        "description": {
+          "type": "string",
+          "description": "Event description (plain text or simple HTML)."
+        },
+        "location": {
+          "type": "string",
+          "description": "Free-form location, e.g. a room name or address."
+        },
+        "start_date_time": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Timed event start, RFC3339 (e.g. 2026-09-01T10:00:00+02:00 or ...Z). Pair with end_date_time."
+        },
+        "end_date_time": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Timed event end, RFC3339. Pair with start_date_time."
+        },
+        "time_zone": {
+          "type": "string",
+          "minLength": 1,
+          "description": "IANA time zone for start/end (e.g. \"Europe/Berlin\"). REQUIRED for recurring events; otherwise optional when the RFC3339 offsets already say everything."
+        },
+        "start_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "All-day event start date (YYYY-MM-DD). Pair with end_date."
+        },
+        "end_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "All-day event end date, EXCLUSIVE — the day after the last day (a one-day event on the 5th ends on the 6th)."
+        },
+        "attendees": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "minLength": 3,
+                "description": "Attendee email address."
+              },
+              "optional": {
+                "type": "boolean",
+                "description": "Mark attendance as optional."
+              }
+            },
+            "required": [
+              "email"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Guest list. On update this REPLACES the whole list — fetch the event first and send the complete new list. Invitation emails go out only with send_updates=all."
+        },
+        "recurrence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "RRULE/RDATE/EXRULE/EXDATE lines (RFC 5545) making the event recurring, e.g. [\"RRULE:FREQ=WEEKLY;BYDAY=MO,WE\"]. Requires the timed pair plus time_zone."
+        },
+        "add_meet": {
+          "type": "boolean",
+          "description": "Attach a Google Meet conference. The returned conferenceData may be status=pending — re-run get_event for the final Meet link."
+        },
+        "send_updates": {
+          "type": "string",
+          "enum": [
+            "all",
+            "external_only",
+            "none"
+          ],
+          "description": "Who receives an email about this change: all guests, only guests outside your organization, or nobody. Defaults to none — attendees are NOT notified unless you pass all."
+        },
+        "use_default_reminders": {
+          "type": "boolean",
+          "description": "Use the calendar's default reminders (ignored when reminders[] is given)."
+        },
+        "reminders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "email",
+                  "popup"
+                ],
+                "description": "Reminder channel."
+              },
+              "minutes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 40320,
+                "description": "Minutes before the event start (0..40320 = 4 weeks)."
+              }
+            },
+            "required": [
+              "method",
+              "minutes"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 5,
+          "description": "Custom reminders (max 5). Setting this turns default reminders off for the event."
+        },
+        "transparency": {
+          "type": "string",
+          "enum": [
+            "opaque",
+            "transparent"
+          ],
+          "description": "opaque = the event blocks time in free/busy (default); transparent = it does not (shows as free)."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "default",
+            "public",
+            "private"
+          ],
+          "description": "Who can see event details on a shared calendar."
+        },
+        "color_id": {
+          "type": "string",
+          "description": "Event color id (\"1\"..\"11\"; the palette is fixed by Google)."
+        },
+        "guests_can_invite_others": {
+          "type": "boolean",
+          "description": "Whether guests may invite more people."
+        },
+        "guests_can_modify": {
+          "type": "boolean",
+          "description": "Whether guests may edit the event."
+        },
+        "guests_can_see_other_guests": {
+          "type": "boolean",
+          "description": "Whether guests can see the guest list."
+        }
+      },
+      "required": [
+        "calendar_id",
+        "event_id"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "delete_event",
+    "title": "Delete an event",
+    "description": "Deletes (cancels) an event — there is no undelete. Deleting a series master id cancels the ENTIRE recurring series; deleting one instance id (from list_event_instances) cancels only that occurrence. On an event with guests this cancels the meeting for everyone, but cancellation emails go out only with send_updates=all. Returns {deleted:true}.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "calendar_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The calendar id from list_calendars, or \"primary\" for the authenticated user's main calendar."
+        },
+        "event_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The event id from list_events or create_event output. A recurring-instance id (masterId_20260101T100000Z from list_event_instances) addresses one occurrence."
+        },
+        "send_updates": {
+          "type": "string",
+          "enum": [
+            "all",
+            "external_only",
+            "none"
+          ],
+          "description": "Who receives an email about this change: all guests, only guests outside your organization, or nobody. Defaults to none — attendees are NOT notified unless you pass all."
+        }
+      },
+      "required": [
+        "calendar_id",
+        "event_id"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "move_event",
+    "title": "Move an event to another calendar",
+    "description": "Moves an event to a different calendar (changes its organizer calendar; the event id stays the same). Rescheduling to another TIME is update_event, not this. Only regular events can move — Out of Office, Focus Time, working-location and birthday events cannot, and events with attendees can be moved only by their organizer. Needs writer access to both calendars. send_updates=all notifies the guests.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "calendar_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The calendar id from list_calendars, or \"primary\" for the authenticated user's main calendar."
+        },
+        "event_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The event id from list_events or create_event output. A recurring-instance id (masterId_20260101T100000Z from list_event_instances) addresses one occurrence."
+        },
+        "destination_calendar_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The calendar id the event moves to (from list_calendars)."
+        },
+        "send_updates": {
+          "type": "string",
+          "enum": [
+            "all",
+            "external_only",
+            "none"
+          ],
+          "description": "Who receives an email about this change: all guests, only guests outside your organization, or nobody. Defaults to none — attendees are NOT notified unless you pass all."
+        }
+      },
+      "required": [
+        "calendar_id",
+        "event_id",
+        "destination_calendar_id"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "list_event_instances",
+    "title": "List instances of a recurring event",
+    "description": "Expands one recurring event (the series master id) into its individual instances, each with its own id (like masterId_20260901T100000Z) and concrete start/end. Use an instance id with update_event to reschedule a single occurrence, or with delete_event to cancel just that one; exceptions already made to the series show their changed times here. show_deleted=true includes cancelled occurrences. Bound the window with time_min/time_max — an unbounded infinite series is paginated via page_token.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "calendar_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The calendar id from list_calendars, or \"primary\" for the authenticated user's main calendar."
+        },
+        "event_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The recurring series master id (from list_events without single_events)."
+        },
+        "time_min": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Only instances ending at/after this RFC3339 moment."
+        },
+        "time_max": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Only instances starting before this RFC3339 moment."
+        },
+        "time_zone": {
+          "type": "string",
+          "minLength": 1,
+          "description": "IANA zone the response times are rendered in."
+        },
+        "max_results": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2500,
+          "description": "Max instances per page (1..2500)."
+        },
+        "page_token": {
+          "type": "string",
+          "description": "nextPageToken from the previous page."
+        },
+        "show_deleted": {
+          "type": "boolean",
+          "description": "Include cancelled instances (status=cancelled)."
+        }
+      },
+      "required": [
+        "calendar_id",
+        "event_id"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "query_free_busy",
+    "title": "Query free/busy times",
+    "description": "Returns the busy intervals of up to 50 calendars in one time window — the way to find a common free slot before create_event. Input calendar ids (or attendee email addresses, which double as their primary-calendar ids — subject to their sharing settings). The response maps each calendar id to busy:[{start,end}] ranges; gaps between them are free. Only busy blocks come back — never event titles or details — and events marked transparent (free) don't appear. A calendar the user cannot read shows up under errors, not busy. This is a pure read despite being an HTTP POST.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "time_min": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Window start, RFC3339."
+        },
+        "time_max": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Window end, RFC3339."
+        },
+        "time_zone": {
+          "type": "string",
+          "minLength": 1,
+          "description": "IANA zone the busy times are rendered in (default UTC)."
+        },
+        "calendar_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "maxItems": 50,
+          "description": "Calendar ids to check (1..50) — \"primary\", calendar ids from list_calendars, or attendee emails."
+        }
+      },
+      "required": [
+        "time_min",
+        "time_max",
+        "calendar_ids"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "create_out_of_office",
+    "title": "Create an Out of Office block",
+    "description": "Creates an Out of Office event that can auto-decline meeting invitations while it lasts (auto_decline: all overlapping meetings, or only new invitations; decline_message customizes the reply). ONLY works on the PRIMARY calendar of a Google Workspace account — consumer Gmail and secondary calendars get HTTP 400. Always timed (start/end date_time), never all-day. Manage it afterwards like any event: update_event to change it, delete_event to remove it, list_events with event_types=[\"out_of_office\"] to find existing blocks. Not retried after an ambiguous failure — check list_events before re-sending.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Title (defaults to \"Out of office\")."
+        },
+        "calendar_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The calendar id from list_calendars, or \"primary\" for the authenticated user's main calendar.",
+          "default": "primary"
+        },
+        "start_date_time": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Block start, RFC3339 (these blocks are always timed, never all-day)."
+        },
+        "end_date_time": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Block end, RFC3339."
+        },
+        "time_zone": {
+          "type": "string",
+          "minLength": 1,
+          "description": "IANA time zone name, e.g. \"Europe/Berlin\" or \"America/New_York\"."
+        },
+        "auto_decline": {
+          "type": "string",
+          "enum": [
+            "none",
+            "all",
+            "new"
+          ],
+          "description": "Which conflicting meeting invitations Calendar auto-declines: none, all overlapping ones, or only new ones arriving after the block is created (existing meetings survive)."
+        },
+        "decline_message": {
+          "type": "string",
+          "description": "Message sent with each auto-declined invitation."
+        },
+        "send_updates": {
+          "type": "string",
+          "enum": [
+            "all",
+            "external_only",
+            "none"
+          ],
+          "description": "Who receives an email about this change: all guests, only guests outside your organization, or nobody. Defaults to none — attendees are NOT notified unless you pass all."
+        }
+      },
+      "required": [
+        "start_date_time",
+        "end_date_time"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "create_focus_time",
+    "title": "Create a Focus Time block",
+    "description": "Creates a Focus Time event: blocks the slot, can auto-decline conflicting invitations (auto_decline + decline_message) and can flip Google Chat to Do Not Disturb (chat_status). ONLY works on the PRIMARY calendar of a Google Workspace account — consumer Gmail and secondary calendars get HTTP 400. Always timed (start/end date_time), never all-day. Manage it afterwards like any event: update_event / delete_event, and list_events with event_types=[\"focus_time\"] to find existing blocks. Not retried after an ambiguous failure — check list_events before re-sending.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Title (defaults to \"Focus time\")."
+        },
+        "chat_status": {
+          "type": "string",
+          "enum": [
+            "available",
+            "do_not_disturb"
+          ],
+          "description": "Google Chat presence during the block."
+        },
+        "calendar_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The calendar id from list_calendars, or \"primary\" for the authenticated user's main calendar.",
+          "default": "primary"
+        },
+        "start_date_time": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Block start, RFC3339 (these blocks are always timed, never all-day)."
+        },
+        "end_date_time": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "Block end, RFC3339."
+        },
+        "time_zone": {
+          "type": "string",
+          "minLength": 1,
+          "description": "IANA time zone name, e.g. \"Europe/Berlin\" or \"America/New_York\"."
+        },
+        "auto_decline": {
+          "type": "string",
+          "enum": [
+            "none",
+            "all",
+            "new"
+          ],
+          "description": "Which conflicting meeting invitations Calendar auto-declines: none, all overlapping ones, or only new ones arriving after the block is created (existing meetings survive)."
+        },
+        "decline_message": {
+          "type": "string",
+          "description": "Message sent with each auto-declined invitation."
+        },
+        "send_updates": {
+          "type": "string",
+          "enum": [
+            "all",
+            "external_only",
+            "none"
+          ],
+          "description": "Who receives an email about this change: all guests, only guests outside your organization, or nobody. Defaults to none — attendees are NOT notified unless you pass all."
+        }
+      },
+      "required": [
+        "start_date_time",
+        "end_date_time"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "raw_request",
+    "title": "Raw Google Calendar API call",
+    "description": "Escape hatch to call any Google Calendar API v3 path directly, for requests the typed tools don't cover — e.g. events.quickAdd (\"calendar/v3/calendars/primary/events/quickAdd?text=Lunch tomorrow noon\", POST), the colors palette (\"calendar/v3/colors\"), ACL rules, secondary-calendar creation (\"calendar/v3/calendars\", POST), removing a Meet conference (PATCH with {\"conferenceData\":null} and ?conferenceDataVersion=1), watch channels, or an event PUT that replaces every field. The path is relative to https://www.googleapis.com, must stay under calendar/v3/ (other Google APIs on this host — drive/v3, gmail/v1, ... — are rejected before any request is sent) and may carry a query string. The Bearer token is added automatically; the method defaults to GET. Remember: PUT replaces unspecified fields with defaults — prefer PATCH semantics via update_event when possible.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "API path relative to https://www.googleapis.com, starting with \"calendar/v3/\", e.g. \"calendar/v3/calendars/primary/events\"."
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ],
+          "description": "HTTP method. Defaults to GET."
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": {},
+          "description": "JSON request body (POST/PUT/PATCH only)."
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": true
+    }
+  }
+]

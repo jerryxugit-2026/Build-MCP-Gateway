@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "example-mcp-worker",
+  "main": "src/index.mjs",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": false },
+  "placement": { "mode": "smart" },
+  "preview_urls": false,
+  "workers_dev": true,
+  "vars": {
+    "OAUTH_CLIENT_ID": "example-oauth-client-id",
+    "TOKEN_TTL_SECONDS": "86400",
+    "AUTHCODE_TTL_SECONDS": "600"
+  }
+}

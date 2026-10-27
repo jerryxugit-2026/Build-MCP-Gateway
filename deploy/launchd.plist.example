@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.example.mcp-gateway</string>
+  <key>ProgramArguments</key><array>
+    <string>/opt/homebrew/opt/node@22/bin/node</string>
+    <string>--max-old-space-size=96</string>
+    <string>/path/to/Build-MCP-Gateway/gateway/gateway.mjs</string>
+  </array>
+  <key>WorkingDirectory</key><string>/path/to/Build-MCP-Gateway/gateway</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>10</integer>
+  <key>SoftResourceLimits</key>
+  <dict>
+    <key>NumberOfFiles</key>
+    <integer>10240</integer>
+  </dict>
+  <key>StandardOutPath</key><string>/path/to/Build-MCP-Gateway/gateway/logs/launchd.log</string>
+  <key>StandardErrorPath</key><string>/path/to/Build-MCP-Gateway/gateway/logs/launchd.log</string>
+</dict></plist>

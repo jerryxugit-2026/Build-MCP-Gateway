@@ -1,0 +1,22 @@
+[
+  {
+    "name": "gemini_grounding_search",
+    "description": "用 Vertex AI Gemini 的 Google 搜索接地回答实时问题，返回答案 + 来源 URL。⚠️ 本工具按 grounding 请求计费。计费项目与区域由部署侧固定，不接受调用方指定。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "The grounded search question to ask Gemini."
+        },
+        "model": {
+          "type": "string",
+          "description": "Optional Vertex model name. Default: gemini-2.5-flash"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    }
+  }
+]

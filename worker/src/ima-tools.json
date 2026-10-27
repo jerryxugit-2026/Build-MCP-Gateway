@@ -1,0 +1,197 @@
+[
+  {
+    "name": "search_knowledge_base",
+    "description": "搜索知识库列表。query 传空字符串时返回当前账号下所有可见知识库（含自建与订阅）。知道知识库名称但不知道 ID 时用此接口。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "知识库名称关键词。传空字符串返回全部知识库。",
+          "default": ""
+        },
+        "cursor": {
+          "type": "string",
+          "description": "分页游标，首次传空字符串。",
+          "default": ""
+        },
+        "limit": {
+          "type": "integer",
+          "description": "返回数量上限，1-20。",
+          "minimum": 1,
+          "maximum": 20,
+          "default": 20
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "get_knowledge_base",
+    "description": "获取知识库详情（描述、推荐问题等）。支持一次查询 1-20 个知识库。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "知识库 ID 列表，1-20 个，不可重复。",
+          "minItems": 1,
+          "maxItems": 20
+        }
+      },
+      "required": [
+        "ids"
+      ]
+    }
+  },
+  {
+    "name": "get_knowledge_list",
+    "description": "浏览知识库内容列表（根目录或指定文件夹），分页返回文件与子文件夹。操作根目录时省略 folder_id。folder_id 以 folder_ 前缀开头。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "knowledge_base_id": {
+          "type": "string",
+          "description": "知识库 ID。"
+        },
+        "cursor": {
+          "type": "string",
+          "description": "分页游标，首次传空字符串。",
+          "default": ""
+        },
+        "limit": {
+          "type": "integer",
+          "description": "返回数量上限，1-50。",
+          "minimum": 1,
+          "maximum": 50,
+          "default": 20
+        },
+        "folder_id": {
+          "type": "string",
+          "description": "文件夹 ID（folder_ 前缀）。省略则浏览根目录。"
+        }
+      },
+      "required": [
+        "knowledge_base_id"
+      ]
+    }
+  },
+  {
+    "name": "search_knowledge",
+    "description": "在指定知识库中按关键词搜索内容（含文件和文件夹），返回命中的标题、摘要片段。这是知识库内容检索的核心接口。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "搜索关键词。"
+        },
+        "knowledge_base_id": {
+          "type": "string",
+          "description": "目标知识库 ID。"
+        },
+        "cursor": {
+          "type": "string",
+          "description": "分页游标，首次传空字符串。",
+          "default": ""
+        }
+      },
+      "required": [
+        "query",
+        "knowledge_base_id"
+      ]
+    }
+  },
+  {
+    "name": "get_media_info",
+    "description": "获取知识库条目的原文内容或下载链接。传入 media_id（来自 get_knowledge_list 或 search_knowledge 的返回）。对微信文章/网页/文件类，返回可访问 URL；对笔记类（media_id 以 note_ 开头），会自动拉取并返回笔记正文（note_content 字段，纯文本）。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "media_id": {
+          "type": "string",
+          "description": "媒体条目 ID。"
+        }
+      },
+      "required": [
+        "media_id"
+      ]
+    }
+  },
+  {
+    "name": "get_note_content",
+    "description": "读取笔记正文（纯文本）。传入 note_id（笔记的数字 ID，即 get_media_info 返回的 notebook_id，或笔记搜索接口返回的 doc_id）。这是读取 IMA 笔记原文的专用接口。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "note_id": {
+          "type": "string",
+          "description": "笔记数字 ID。"
+        },
+        "target_content_format": {
+          "type": "integer",
+          "description": "内容格式：0=纯文本（推荐）。",
+          "default": 0
+        }
+      },
+      "required": [
+        "note_id"
+      ]
+    }
+  },
+  {
+    "name": "get_addable_knowledge_base_list",
+    "description": "获取当前用户有权限添加内容的知识库列表。仅在未指定目标知识库时使用。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "cursor": {
+          "type": "string",
+          "description": "分页游标，首次传空字符串。",
+          "default": ""
+        },
+        "limit": {
+          "type": "integer",
+          "description": "返回数量上限，1-50。",
+          "minimum": 1,
+          "maximum": 50,
+          "default": 20
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "import_urls",
+    "description": "将网页或微信文章 URL 添加到知识库（1-10 个 URL）。添加到根目录时省略 folder_id。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "knowledge_base_id": {
+          "type": "string",
+          "description": "目标知识库 ID。"
+        },
+        "urls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "URL 列表，1-10 个。",
+          "minItems": 1,
+          "maxItems": 10
+        },
+        "folder_id": {
+          "type": "string",
+          "description": "目标文件夹 ID（folder_ 前缀）。省略则添加到根目录。"
+        }
+      },
+      "required": [
+        "knowledge_base_id",
+        "urls"
+      ]
+    }
+  }
+]
